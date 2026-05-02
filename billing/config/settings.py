@@ -37,6 +37,17 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
+    "apps.accounts",
+    "apps.products",
+    "apps.pricing",
+    "apps.subscriptions",
+    "apps.invoices",
+    "apps.payments",
+    "apps.usage",
+    "apps.discounts",
+    "apps.audit",
+    "apps.webhooks",
 ]
 
 MIDDLEWARE = [
@@ -49,7 +60,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "billing.urls"
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
@@ -67,18 +78,34 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "billing.wsgi.application"
+WSGI_APPLICATION = "config.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+import os
+
+DB_HOST = os.environ.get("POSTGRES_HOST", "localhost")
+DB_NAME = os.environ.get("POSTGRES_DB", "billing_db")
+DB_USER = os.environ.get("POSTGRES_USER", "postgres")
+DB_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "admin123")
+DB_PORT = os.environ.get("POSTGRES_PORT", "5432")
+
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": DB_NAME,
+        "USER": DB_USER,
+        "PASSWORD": DB_PASSWORD,
+        "HOST": DB_HOST,
+        "PORT": DB_PORT,
+        "CONN_MAX_AGE": 60,
     }
 }
+
+REDIS_URL = "redis://localhost:6379/0"
+CELERY_BROKER_URL = "amqp://guest:guest@localhost:5672//"
 
 
 # Password validation
@@ -123,50 +150,9 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-
-from pathlib import Path
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-SECRET_KEY = "dev-secret"
-DEBUG = True
-ALLOWED_HOSTS = ["*"]
-
-
-
-INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "rest_framework",
-    "apps.accounts",
-    "apps.products",
-    "apps.pricing",
-    "apps.subscriptions",
-    "apps.invoices",
-    "apps.payments",
-    "apps.usage",
-    "apps.audit",
-    "apps.webhooks",
-]
-
-
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "billing_db",
-        "USER": "billing_user",
-        "PASSWORD": "billing_pass",
-        "HOST": "postgres",
-        "PORT": 5432,
-        "CONN_MAX_AGE": 60,
-    }
-}
-
-CELERY_BROKER_URL = "amqp://rabbitmq"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+
+ROOT_URLCONF = "config.urls"
+WSGI_APPLICATION = "config.wsgi.application"
